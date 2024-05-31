@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login e Cadastro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #da683b;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 5px;
+            background-color: #cb4c11;
+            color: #fff;
+            transition: background-color 0.3s;
+        }
+
+        .tab:hover {
+            background-color: #2575fc;
+        }
+
+        .tab.active {
+            background-color: #2575fc;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"],
+        input[type="cpf"],
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #ff5100;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2575fc;
+        }
+
+        #dataDisplay {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+
+        .user-info {
+            margin-bottom: 10px;
+        }
+
+        .user-info span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="showForm('login')">Login</div>
+            <div class="tab" onclick="showForm('signup')">Cadastro</div>
+        </div>
+        <div id="login" class="form-container active">
+            <h2>Login</h2>
+            <form id="loginForm" onsubmit="event.preventDefault(); performLogin()">
+                <input type="text" name="username" id="loginUsername" placeholder="Nome de usuário" required>
+                <input type="password" name="password" id="loginPassword" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
+        <div id="signup" class="form-container">
+            <h2>Cadastro</h2>
+            <form id="signupForm">
+                <input type="text" name="username" placeholder="Nome de usuário" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Senha" required>
+                <input type="text" name="cpf" placeholder="CPF" maxlength="14" required>
+                <input type="tel" name="telefone" placeholder="Telefone" maxlength="11" required>
+                <button type="button" onclick="saveData()">Cadastrar</button>
+                <button type="button" onclick="clearLocalStorage()">Limpar Dados</button>
+            </form>
+        </div>
+        <div id="dataDisplay"></div>
+    </div>
+    <script>
+        // Função para redirecionar para a página de dados
+        function redirectToDataPage() {
+            window.location.href = 'outra_pagina.html';
+        }
+
+        // Função para salvar os dados do formulário de cadastro
+        function saveData() {
+            var form = document.getElementById('signupForm');
+            var username = form.elements['username'].value;
+            var email = form.elements['email'].value;
+            var password = form.elements['password'].value;
+            var telefone = form.elements['telefone'].value;
+            var cpf = form.elements['cpf'].value;
+
+            var users = JSON.parse(localStorage.getItem('users')) || [];
+
+            var isDuplicate = users.some(function(user) {
+                return user.username === username || user.email === email || user.password === password || user.telefone === telefone || user.cpf === cpf;
+            });
+
+            if (!isDuplicate) {
+                var newUser = { username: username, email: email, password: password, telefone: telefone, cpf: cpf };
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                alert('Cadastro realizado com sucesso!');
+                form.reset();
+                 // Atualiza a exibição após salvar os dados
+            } else {
+                alert('Dados duplicados. Por favor, insira informações únicas.');
+            }
+        }
+
+        // Função para limpar o localStorage
+        function clearLocalStorage() {
+            localStorage.removeItem('users');
+            alert('Dados do localStorage removidos com sucesso!');
+            displaySavedData(); // Atualiza a exibição após a remoção dos dados
+        }
+
+        // Função para realizar o login
+        function performLogin() {
+            var form = document.getElementById('loginForm');
+            var username = form.elements['username'].value;
+            var password = form.elements['password'].value;
+
+            var users = JSON.parse(localStorage.getItem('users')) || [];
+
+            var user = users.find(function(user) {
+                return user.username === username && user.password === password;
+            });
+
+            if (user) {
+                redirectToDataPage();
+            } else {
+                alert('Usuário ou senha incorretos.');
+            }
+        }
+
+        // Função para alternar entre os formulários de login e cadastro
+        function showForm(form) {
+            document.getElementById('login').classList.remove('active');
+            document.getElementById('signup').classList.remove('active');
+            document.querySelector('.tab.active').classList.remove('active');
+            document.querySelector('.tab[onclick="showForm(\'' + form + '\')"]').classList.add('active');
+            document.getElementById(form).classList.add('active');
+        }
+
+        // Exibir dados salvos ao carregar a página
+        
+    </script>
+</body>
+</html>

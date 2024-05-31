@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados Salvos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333333;
+        }
+        .data-table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .data-table th, .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #dddddd;
+        }
+        .data-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .data-table td {
+            background-color: #ffffff;
+        }
+        .data-table .actions {
+            white-space: nowrap;
+        }
+        .btn-edit, .btn-delete {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-right: 5px;
+            transition: background-color 0.3s;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+        }
+        .btn-edit:hover, .btn-delete:hover {
+            background-color: #45a049;
+        }
+        .btn-delete {
+            background-color: #f44336;
+        }
+        .btn-delete:hover {
+            background-color: #da190b;
+        }
+        .btn-container {
+            text-align: right;
+            margin-top: 20px;
+        }
+        .btn-add {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn-add:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dados Salvos</h1>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nome de Usuário</th>
+                    <th>Email</th>
+                    <th>Telefone</th>
+                    <th>Senha</th>
+                    <th>CPF</th>
+                    <th class="actions">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="dataDisplay"></tbody>
+        </table>
+        <div class="btn-container">
+            <button class="btn-add" onclick="addData()">Adicionar Novo</button>
+            <button class="link-button" onclick="window.location.href='outra_pagina.html';" style="background-color: #007bff; color: white; border: none; border-radius: 5px; padding: 10px 20px; cursor: pointer; transition: background-color 0.3s;">
+                Voltar ao MENU
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Função para exibir os dados salvos
+        function displaySavedData() {
+            var users = JSON.parse(localStorage.getItem('users')) || [];
+            var dataDisplay = document.getElementById('dataDisplay');
+            var html = '';
+            if (users.length > 0) {
+                users.forEach(function(user, index) {
+                    html += '<tr>';
+                    html += '<td>' + user.username + '</td>';
+                    html += '<td>' + user.email + '</td>';
+                    html += '<td>' + user.telefone + '</td>';
+                    html += '<td>' + user.password + '</td>';
+                    html += '<td>' + user.cpf + '</td>';
+                    html += '<td class="actions">';
+                    html += '<button class="btn-edit" onclick="editData(' + index + ')">Editar</button>';
+                    html += '<button class="btn-delete" onclick="deleteData(' + index + ')">Excluir</button>';
+                    html += '</td>';
+                    html += '</tr>';
+                });
+            } else {
+                html += '<tr><td colspan="6">Nenhum dado salvo ainda.</td></tr>';
+            }
+            dataDisplay.innerHTML = html;
+        }
+
+        // Função para adicionar novo dado
+        function addData() {
+            var newUsername = prompt('Nome de usuário:');
+            var newEmail = prompt('Email:');
+            var newTelefone = prompt('Telefone:');
+            var newPassword = prompt('Senha:');
+            var newCpf = prompt('CPF:');
+            if (newUsername && newEmail && newTelefone && newPassword && newCpf) {
+                var users = JSON.parse(localStorage.getItem('users')) || [];
+                users.push({ username: newUsername, email: newEmail, telefone: newTelefone, password: newPassword, cpf: newCpf });
+                localStorage.setItem('users', JSON.stringify(users));
+                displaySavedData();
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        }
+
+        // Função para editar um dado
+        function editData(index) {
+            var users = JSON.parse(localStorage.getItem('users')) || [];
+            var user = users[index];
+            var newUsername = prompt('Novo nome de usuário:', user.username);
+            var newEmail = prompt('Novo email:', user.email);
+            var newTelefone = prompt('Novo telefone:', user.telefone);
+            var newPassword = prompt('Nova senha:', user.password);
+            var newCpf = prompt('Novo CPF:', user.cpf);
+            if (newUsername && newEmail && newTelefone && newPassword && newCpf) {
+                users[index] = { username: newUsername, email: newEmail, telefone: newTelefone, password: newPassword, cpf: newCpf };
+                localStorage.setItem('users', JSON.stringify(users));
+                displaySavedData();
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        }
+
+        // Função para excluir um dado
+        function deleteData(index) {
+            var confirmDelete = confirm('Tem certeza que deseja excluir este dado?');
+            if (confirmDelete) {
+                var users = JSON.parse(localStorage.getItem('users')) || [];
+                users.splice(index, 1);
+                localStorage.setItem('users', JSON.stringify(users));
+                displaySavedData();
+            }
+        }
+
+        // Exibir dados salvos ao carregar a página
+        displaySavedData();
+    </script>
+</body>
+</html>

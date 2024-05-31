@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de produtos</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        form {
+            background-color: #fff;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        input[type="text"],
+        textarea,
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #333;
+            color: #fff;
+        }
+
+        #btn-create,
+        #btn-update,
+        #btn-delete {
+            background-color: #4caf50;
+            color: #fff;
+            margin-right: 10px;
+        }
+
+        #btn-delete {
+            background-color: #f44336;
+        }
+
+        #btn-create:hover,
+        #btn-update:hover,
+        #btn-delete:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            display: none;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .link-button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .toggle-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .toggle-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cadastro de produtos</h1>
+    <form id="form-produto">
+        <label for="nome-produto">Nome:</label>
+        <input type="text" id="nome-produto" required>
+        <label for="descricao-produto">Descrição:</label>
+        <textarea id="descricao-produto" required></textarea>
+        <label for="preco-produto">Preço:</label>
+        <input type="number" id="preco-produto" step="0.01" required>
+        <button type="button" id="btn-create">Criar</button>
+    </form>
+
+    <button class="toggle-button" id="toggle-info">Mostrar Informações</button>
+
+    <!-- Local para exibir informações salvas -->
+    <table id="info-salvas">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Preço</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <button class="link-button" onclick="window.location.href='lista.html';">Ver Lista de Produtos</button>
+    <a><p> <button class="link-button" onclick="window.location.href='outra_pagina.html';">Voltar ao MENU</button></p></a>
+
+    <script src="scripts.js"></script>
+    <script>
+        document.getElementById('preco-produto').addEventListener('input', function() {
+            this.value = this.value.slice(0, 5); // Limita o campo a 5 dígitos
+        });
+        // Captura o formulário
+        const formProduto = document.getElementById('form-produto');
+        // Captura o local onde exibiremos as informações salvas
+        const infoSalvasBody = document.querySelector('#info-salvas tbody');
+        const infoTable = document.getElementById('info-salvas');
+        const toggleInfoButton = document.getElementById('toggle-info');
+
+        // Função para criar uma nova linha na tabela
+        function criarLinhaTabela(nome, descricao, preco) {
+            // Cria uma nova linha na tabela
+            const newRow = infoSalvasBody.insertRow();
+
+            // Insere células na nova linha
+            const cell1 = newRow.insertCell(0);
+            const cell2 = newRow.insertCell(1);
+            const cell3 = newRow.insertCell(2);
+            const cell4 = newRow.insertCell(3);
+
+            // Adiciona os dados do produto nas células
+            cell1.textContent = nome;
+            cell2.textContent = descricao;
+            cell3.textContent = preco;
+
+            // Adiciona botões de ação para cada linha
+            const btnEditar = document.createElement('button');
+            btnEditar.textContent = 'Editar';
+            btnEditar.addEventListener('click', function() {
+                editarProduto(newRow);
+            });
+            cell4.appendChild(btnEditar);
+
+            const btnExcluir = document.createElement('button');
+            btnExcluir.textContent = 'Excluir';
+            btnExcluir.addEventListener('click', function() {
+                excluirProduto(newRow);
+            });
+            cell4.appendChild(btnExcluir);
+        }
+
+        // Função para editar um produto
+        function editarProduto(row) {
+            document.getElementById('nome-produto').value = row.cells[0].textContent;
+            document.getElementById('descricao-produto').value = row.cells[1].textContent;
+            document.getElementById('preco-produto').value = row.cells[2].textContent;
+            // Remove a linha após editar
+            row.parentNode.removeChild(row);
+            salvarProdutos();
+        }
+
+        // Função para excluir um produto
+        function excluirProduto(row) {
+            // Remove a linha
+            row.parentNode.removeChild(row);
+            salvarProdutos();
+        }
+
+        // Função para salvar os produtos no localStorage
+        function salvarProdutos() {
+            const produtos = [];
+            document.querySelectorAll('#info-salvas tbody tr').forEach(row => {
+                const nome = row.cells[0].textContent;
+                const descricao = row.cells[1].textContent;
+                const preco = row.cells[2].textContent;
+                produtos.push({ nome, descricao, preco });
+            });
+            localStorage.setItem('produtos', JSON.stringify(produtos));
+        }
+
+        // Função para carregar os produtos do localStorage
+        function carregarProdutos() {
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            produtos.forEach(produto => {
+                criarLinhaTabela(produto.nome, produto.descricao, produto.preco);
+            });
+        }
+
+        // Adiciona um ouvinte de evento para o botão "Criar"
+        document.getElementById('btn-create').addEventListener('click', function() {
+            // Captura os valores dos campos
+            const nomeProduto = document.getElementById('nome-produto').value;
+            const descricaoProduto = document.getElementById('descricao-produto').value;
+            const precoProduto = document.getElementById('preco-produto').value;
+
+            // Verifica se todos os campos estão preenchidos
+            if(nomeProduto && descricaoProduto && precoProduto) {
+                // Cria uma linha na tabela com os dados do produto
+                criarLinhaTabela(nomeProduto, descricaoProduto, precoProduto);
+
+                // Salva os produtos no localStorage
+                salvarProdutos();
+
+                // Limpa os campos do formulário após criar o produto
+                formProduto.reset();
+
+                // Exibe a tabela de informações
+                infoTable.style.display = 'table';
+                toggleInfoButton.textContent = 'Ocultar Informações';
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        });
+
+        // Adiciona um ouvinte de evento para o botão de mostrar/ocultar informações
+        toggleInfoButton.addEventListener('click', function() {
+            if (infoTable.style.display === 'none' || infoTable.style.display === '') {
+                infoTable.style.display = 'table';
+                toggleInfoButton.textContent = 'Ocultar Informações';
+            } else {
+                infoTable.style.display = 'none';
+                toggleInfoButton.textContent = 'Mostrar Informações';
+            }
+        });
+
+        // Carrega os produtos do localStorage ao carregar a página
+        window.addEventListener('DOMContentLoaded', carregarProdutos);
+    </script>
+</body>
+</html>

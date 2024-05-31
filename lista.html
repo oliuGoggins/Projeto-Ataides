@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Produtos</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .link-button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        .btn-delete {
+            background-color: #f44336; /* Red */
+        }
+
+        .btn-edit {
+            background-color: #008CBA; /* Blue */
+        }
+
+        .btn-delete, .btn-edit {
+            cursor: pointer;
+        }
+
+        .btn-delete:hover, .btn-edit:hover {
+            background-color: #555; /* Dark Grey */
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        /* Estilos do formulário pop-up */
+        .popup-form {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        /* Estilos do botão "Fechar" do formulário pop-up */
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Estilos para o fundo do formulário pop-up */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 900;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Produtos</h1>
+    <table id="lista-produtos">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Preço</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <button class="link-button" onclick="window.location.href='produtos.html';">Voltar ao Cadastro</button>
+
+    <!-- Formulário de Edição -->
+    <div class="overlay" id="overlay"></div>
+    <div class="popup-form" id="popup-form">
+        <button class="close-button" onclick="fecharPopup()">X</button>
+        <h2>Editar Produto</h2>
+        <form id="editForm">
+            <input type="text" id="editNome" placeholder="Nome" required><br><br>
+            <input type="text" id="editDescricao" placeholder="Descrição" required><br><br>
+            <input type="number" id="editPreco" placeholder="Preço" step="0.01" required><br><br>
+            <button type="submit">Salvar</button>
+        </form>
+    </div>
+
+    <script>
+        // Função para carregar os produtos do localStorage
+        function carregarProdutos() {
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            const tbody = document.querySelector('#lista-produtos tbody');
+            tbody.innerHTML = ''; // Limpa o conteúdo anterior da tabela
+            produtos.forEach(produto => {
+                const row = document.createElement('tr');
+                const cell1 = document.createElement('td');
+                const cell2 = document.createElement('td');
+                const cell3 = document.createElement('td');
+                const cell4 = document.createElement('td');
+                cell1.textContent = produto.nome;
+                cell2.textContent = produto.descricao;
+                cell3.textContent = produto.preco;
+                
+                // Botões de Ação
+                const btnEdit = document.createElement('button');
+                btnEdit.textContent = 'Editar';
+                btnEdit.classList.add('btn-edit');
+                btnEdit.addEventListener('click', function() {
+                    abrirPopupEditar(produto);
+                });
+
+                const btnDelete = document.createElement('button');
+                btnDelete.textContent = 'Excluir';
+                btnDelete.classList.add('btn-delete');
+                btnDelete.addEventListener('click', function() {
+                    excluirProduto(produto, row);
+                });
+
+                cell4.appendChild(btnEdit);
+                cell4.appendChild(btnDelete);
+
+                row.appendChild(cell1);
+                row.appendChild(cell2);
+                row.appendChild(cell3);
+                row.appendChild(cell4);
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // Função para abrir o formulário pop-up de edição
+        function abrirPopupEditar(produto) {
+            const overlay = document.getElementById('overlay');
+            const popupForm = document.getElementById('popup-form');
+            const editNome = document.getElementById('editNome');
+            const editDescricao = document.getElementById('editDescricao');
+            const editPreco = document.getElementById('editPreco');
+
+            // Preencher campos do formulário
+            editNome.value = produto.nome;
+            editDescricao.value = produto.descricao;
+            editPreco.value = produto.preco;
+
+            // Exibir o formulário pop-up e o overlay
+            overlay.style.display = 'block';
+            popupForm.style.display = 'block';
+        }
+
+        // Função para fechar o formulário pop-up
+        function fecharPopup() {
+            const overlay = document.getElementById('overlay');
+            const popupForm = document.getElementById('popup-form');
+            
+            // Ocultar o overlay e o formulário pop-up
+            overlay.style.display = 'none';
+            popupForm.style.display = 'none';
+        }
+
+        // Função para editar o produto
+        function editarProduto(event) {
+            event.preventDefault(); // Impede o envio do formulário
+            
+            // Captura os valores dos campos do formulário
+            const editNome = document.getElementById('editNome').value;
+            const editDescricao = document.getElementById('editDescricao').value;
+            const editPreco = document.getElementById('editPreco').value;
+
+            // Captura o índice do produto na lista de produtos no localStorage
+            const index = produtos.findIndex(produto => produto.nome === editNome);
+
+            // Atualiza os valores do produto
+            produtos[index].nome = editNome;
+            produtos[index].descricao = editDescricao;
+            produtos[index].preco = editPreco;
+
+            // Salva a lista de produtos atualizada no localStorage
+            localStorage.setItem('produtos', JSON.stringify(produtos));
+
+            // Fecha o formulário pop-up
+            fecharPopup();
+
+            // Recarrega os produtos na tabela
+            carregarProdutos();
+        }
+
+        // Função para excluir o produto
+        function excluirProduto(produto, row) {
+            // Remove o produto da lista de produtos
+            produtos = produtos.filter(p => p.nome !== produto.nome);
+
+            // Salva a lista de produtos atualizada no localStorage
+            localStorage.setItem('produtos', JSON.stringify(produtos));
+
+            // Remove a linha da tabela
+            row.remove();
+        }
+
+        // Adiciona um ouvinte de evento para o formulário de edição
+        document.getElementById('editForm').addEventListener('submit', editarProduto);
+
+        // Carrega os produtos do localStorage ao carregar a página
+        let produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+        carregarProdutos();
+    </script>
+</body>
+</html>

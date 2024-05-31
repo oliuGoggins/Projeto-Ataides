@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD de Pedidos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+        form {
+            background-color: #fff;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #333;
+            color: #fff;
+        }
+        #btn-create {
+            background-color: #4caf50;
+            color: #fff;
+        }
+        #btn-create:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .link-button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cadastro de Pedidos</h1>
+    <form id="form-pedido">
+        <label for="cliente-pedido">Cliente:</label>
+        <select id="cliente-pedido" required></select>
+        <label for="produto-pedido">Produto:</label>
+        <select id="produto-pedido" required onchange="mostrarInfoProduto()"></select>
+        <label for="quantidade-pedido">Quantidade:</label>
+        <input type="number" id="quantidade-pedido" required>
+        <button type="button" id="btn-create">Criar</button>
+    </form>
+    <div id="info-produto"></div>
+
+    <table id="pedidos-salvos">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Preço</th>
+                <th>Descrição</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <button class="link-button" onclick="window.location.href='outra_pagina.html';">Voltar ao MENU</button>
+
+    <script>
+        const formPedido = document.getElementById('form-pedido');
+        const pedidosBody = document.querySelector('#pedidos-salvos tbody');
+        const clientesSelect = document.getElementById('cliente-pedido');
+        const produtosSelect = document.getElementById('produto-pedido');
+        const infoProdutoDiv = document.getElementById('info-produto');
+        let produtos = [];
+
+        function carregarProdutos() {
+            produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            produtos.forEach(produto => {
+                const option = document.createElement('option');
+                option.value = produto.nome;
+                option.textContent = produto.nome;
+                produtosSelect.appendChild(option);
+            });
+        }
+
+        function carregarClientes() {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.username;
+                option.textContent = user.username;
+                clientesSelect.appendChild(option);
+            });
+        }
+
+        function mostrarInfoProduto() {
+            const produtoSelecionado = produtosSelect.value;
+            const produto = produtos.find(p => p.nome === produtoSelecionado);
+            if (produto) {
+                infoProdutoDiv.innerHTML = `
+                    <p><strong>Preço:</strong> ${produto.preco}</p>
+                    <p><strong>Descrição:</strong> ${produto.descricao}</p>
+                `;
+            } else {
+                infoProdutoDiv.innerHTML = '';
+            }
+        }
+
+        function criarLinhaTabela(nomeCliente, produto, quantidade, preco, descricao) {
+            const newRow = pedidosBody.insertRow();
+            const cell1 = newRow.insertCell(0);
+            const cell2 = newRow.insertCell(1);
+            const cell3 = newRow.insertCell(2);
+            const cell4 = newRow.insertCell(3);
+            const cell5 = newRow.insertCell(4);
+            const cell6 = newRow.insertCell(5);
+
+            cell1.textContent = nomeCliente;
+            cell2.textContent = produto;
+            cell3.textContent = quantidade;
+            cell4.textContent = preco;
+            cell5.textContent = descricao;
+
+            const btnEditar = document.createElement('button');
+            btnEditar.textContent = 'Editar';
+            btnEditar.addEventListener('click', function() {
+                editarPedido(newRow);
+            });
+            cell6.appendChild(btnEditar);
+
+            const btnExcluir = document.createElement('button');
+            btnExcluir.textContent = 'Excluir';
+            btnExcluir.addEventListener('click', function() {
+                excluirPedido(newRow);
+            });
+            cell6.appendChild(btnExcluir);
+        }
+
+        function editarPedido(row) {
+            document.getElementById('cliente-pedido').value = row.cells[0].textContent;
+            document.getElementById('produto-pedido').value = row.cells[1].textContent;
+            document.getElementById('quantidade-pedido').value = row.cells[2].textContent;
+            row.parentNode.removeChild(row);
+            salvarPedidos();
+        }
+
+        function excluirPedido(row) {
+            row.parentNode.removeChild(row);
+            salvarPedidos();
+        }
+
+        function salvarPedidos() {
+            const pedidos = [];
+            document.querySelectorAll('#pedidos-salvos tbody tr').forEach(row => {
+                const nomeCliente = row.cells[0].textContent;
+                const produto = row.cells[1].textContent;
+                const quantidade = row.cells[2].textContent;
+                const preco = row.cells[3].textContent;
+                const descricao = row.cells[4].textContent;
+                pedidos.push({ nomeCliente, produto, quantidade, preco, descricao });
+            });
+            localStorage.setItem('pedidos', JSON.stringify(pedidos));
+        }
+
+        function carregarPedidos() {
+            const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+            pedidos.forEach(pedido => {
+                criarLinhaTabela(pedido.nomeCliente, pedido.produto, pedido.quantidade, pedido.preco, pedido.descricao);
+            });
+        }
+
+        document.getElementById('btn-create').addEventListener('click', function() {
+            const nomeCliente = document.getElementById('cliente-pedido').value;
+            const produtoSelecionado = document.getElementById('produto-pedido').value;
+            const quantidade = document.getElementById('quantidade-pedido').value;
+
+            const produto = produtos.find(p => p.nome === produtoSelecionado);
+            const preco = produto ? produto.preco : '';
+            const descricao = produto ? produto.descricao : '';
+
+            if (nomeCliente && produtoSelecionado && quantidade) {
+                criarLinhaTabela(nomeCliente, produtoSelecionado, quantidade, preco, descricao);
+                salvarPedidos();
+                formPedido.reset();
+                infoProdutoDiv.innerHTML = '';
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', function() {
+            carregarProdutos();
+            carregarClientes();
+            carregarPedidos();
+        });
+    </script>
+</body>
+</html>
